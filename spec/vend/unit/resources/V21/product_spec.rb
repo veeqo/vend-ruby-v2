@@ -27,7 +27,7 @@ RSpec.describe Vend::V21::Product do
 
     subject { described_class.update(product_id, params.merge(connection: connection)) }
 
-    before dos
+    before do
       stub_request(
         :put,
         "https://#{store}.vendhq.com/api/2.1/products/#{product_id}",

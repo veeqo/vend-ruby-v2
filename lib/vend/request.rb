@@ -26,7 +26,7 @@ module Vend
       @uri = case version
       when '0.9'
         uri
-      when '1.0', '2.0'
+      when '1.0', '2.0', '2.1'
         "#{version}/#{uri}"
       else
         "2.0/#{uri}"

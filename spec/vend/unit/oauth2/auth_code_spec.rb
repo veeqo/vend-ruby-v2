@@ -15,8 +15,25 @@ RSpec.describe Vend::Oauth2::AuthCode do
   end
 
   describe '#authorize_url' do
-    it 'return url' do
-      expect(subject.authorize_url).to eq('https://secure.vendhq.com/connect?client_id=client_id&redirect_uri=redirect_uri&response_type=code')
+    let(:expected_base_url) do
+      'https://secure.vendhq.com/connect?client_id=client_id&redirect_uri=redirect_uri&response_type=code'
+    end
+
+    context 'when no additional parameters passed' do
+      subject { super().authorize_url }
+
+      it 'return url' do
+        is_expected.to eq(expected_base_url)
+      end
+    end
+
+    context 'when additional parameters passed' do
+      let(:state) { SecureRandom.hex }
+      subject { super().authorize_url(state: state) }
+
+      it 'returns url with additional parameters' do
+        is_expected.to eq("#{expected_base_url}&state=#{state}")
+      end
     end
   end
 

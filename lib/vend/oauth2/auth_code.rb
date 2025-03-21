@@ -17,8 +17,10 @@ module Vend
         @options = DEFAULT_OPTIONS.merge(options)
       end
 
-      def authorize_url
-        get_oauth2_client.auth_code.authorize_url(redirect_uri: redirect_uri)
+      def authorize_url(params = {})
+        params.merge!(redirect_uri: redirect_uri)
+
+        get_oauth2_client.auth_code.authorize_url(**params)
       end
 
       def token_from_code(code)

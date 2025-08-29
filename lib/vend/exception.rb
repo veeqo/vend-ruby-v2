@@ -8,6 +8,7 @@ module Vend
 
   class BadRequest < HttpError; end
   class Unauthorized < HttpError; end
+  class PaymentRequired < HttpError; end
   class Forbidden < HttpError; end
   class NotFound < HttpError; end
   class MethodNotAllowed < HttpError; end
@@ -25,6 +26,7 @@ module Vend
     ERRORS = {
       400 => Vend::BadRequest,
       401 => Vend::Unauthorized,
+      402 => Vend::PaymentRequired,
       403 => Vend::Forbidden,
       404 => Vend::NotFound,
       405 => Vend::MethodNotAllowed,

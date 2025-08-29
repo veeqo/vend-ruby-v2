@@ -15,11 +15,30 @@ RSpec.describe Vend::HttpErrors do
   end
 
   context 'invalid response status' do
-    context 'when we get a 404' do
+    context 'when received code 402' do
+      let(:code) { 402 }
+      let(:body) do
+        <<~HTML
+        <html>
+        <head><title>402 Payment Required</title></head>
+        <body>
+        <center><h1>402 Payment Required</h1></center>
+        <hr><center>openresty</center>
+        </body>
+        </html>
+        HTML
+      end
+
+      it 'throws an exception' do
+        expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::PaymentRequired, body)
+      end
+    end
+
+    context 'when received code 404' do
       let(:code) { 404 }
 
       it 'should throw an exception' do
-        expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::HttpErrors::ERRORS[code])
+        expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::NotFound)
       end
     end
 

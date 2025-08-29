@@ -1,6 +1,5 @@
 RSpec.describe Vend::HttpErrors do
   let(:dummy_class) { Class.new { extend Vend::HttpErrors } }
-  let(:code) { 200 }
   let(:env) { double }
   let(:body) { {} }
   let(:headers) { {} }
@@ -14,7 +13,39 @@ RSpec.describe Vend::HttpErrors do
     expect(Vend::HttpErrors::ERRORS).not_to be_nil
   end
 
-  context 'invalid response status' do
+  context 'when received a successful response' do
+    it 'does not throw an exception' do
+      (200..299).each do |code|
+        expect { dummy_class.throw_http_exception!(code, env) }.not_to raise_exception
+      end
+    end
+  end
+
+  context 'when response code is 0' do
+    subject { dummy_class.throw_http_exception!(0, env) }
+
+    let(:body) { 'Request timeout' }
+
+    it 'throws the default exception' do
+      expect { subject }.to raise_exception(Vend::HttpError, body)
+    end
+  end
+
+  context 'when response code is not successful' do
+    context 'when response code is mapped to a known exception class' do
+      let(:unknown_error_codes) { [*100..199] + [*300..599] - Vend::HttpErrors::ERRORS.keys }
+
+      let(:body) { 'Something web wrong' }
+
+      it 'throws the default exception' do
+        expect(unknown_error_codes.count).to be_positive
+
+        unknown_error_codes.each do |code|
+          expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::HttpError, body)
+        end
+      end
+    end
+
     context 'when received code 402' do
       let(:code) { 402 }
       let(:body) do
@@ -29,7 +60,7 @@ RSpec.describe Vend::HttpErrors do
         HTML
       end
 
-      it 'throws an exception' do
+      it 'throws a corresponding exception' do
         expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::PaymentRequired, body)
       end
     end
@@ -37,14 +68,18 @@ RSpec.describe Vend::HttpErrors do
     context 'when received code 404' do
       let(:code) { 404 }
 
-      it 'should throw an exception' do
+      it 'throws a corresponding exception' do
         expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::NotFound)
       end
     end
 
-    it 'should have a valid error' do
-      Vend::HttpErrors::ERRORS.keys.each do |code|
-        expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::HttpErrors::ERRORS[code])
+    context 'when received a known code' do
+      let(:body) { '{ "error": "something went wrong" }' }
+
+      it 'throws a corresponding exception class' do
+        Vend::HttpErrors::ERRORS.keys.each do |code|
+          expect { dummy_class.throw_http_exception!(code, env) }.to raise_exception(Vend::HttpErrors::ERRORS[code], body)
+        end
       end
     end
 
@@ -73,14 +108,6 @@ RSpec.describe Vend::HttpErrors do
           expect(e.message).to eq body
         end
       end
-    end
-  end
-
-  context 'valid response status' do
-    let(:code) { 200 }
-
-    it 'should not throw an exception' do
-      expect { dummy_class.throw_http_exception!(code, env) }.to_not raise_exception
     end
   end
 end

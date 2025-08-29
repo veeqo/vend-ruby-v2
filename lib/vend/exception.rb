@@ -42,8 +42,21 @@ module Vend
     }.freeze
 
     def throw_http_exception!(code, env)
-      return unless ERRORS.keys.include? code
+      return if (200..299).include?(code.to_i)
+
+      response_headers = extract_headers_for_error(env)
+      error_class = error_class_by(code)
+
+      raise error_class.new(response_headers), env.body
+    end
+
+    def error_class_by(code)
+      ERRORS.fetch(code, ::Vend::HttpError)
+    end
+
+    def extract_headers_for_error(env)
       response_headers = {}
+
       unless env.body.empty?
         response_headers = begin
           Oj.load(env.body, symbol_keys: true)
@@ -51,10 +64,12 @@ module Vend
           {}
         end
       end
+
       unless env[:response_headers] && env[:response_headers]['X-Retry-After'].nil?
         response_headers[:retry_after] = env[:response_headers]['X-Retry-After'].to_i
       end
-      raise ERRORS[code].new(response_headers), env.body
+
+      response_headers
     end
   end
 end

@@ -6,7 +6,7 @@ RSpec.describe Vend::Middleware::Auth do
     }
     @api = Vend::Middleware::Auth.new(app, options)
     expect(app).to receive(:call).with(
-      request_headers: { 'Authorization' => 'Bearer secret_access_token' }
+      {request_headers: { 'Authorization' => 'Bearer secret_access_token' }}
     )
     @api.call(request_headers: {})
   end

@@ -26,7 +26,7 @@ RSpec.describe Vend::ResourceActions do
 
   describe '.all' do
     it 'should make a get request to the correct route with query params' do
-      expect(@klass).to receive(:get).with('http://foo.bar', page: 1)
+      expect(@klass).to receive(:get).with('http://foo.bar', {page: 1})
       @klass.all(params)
     end
 
@@ -46,14 +46,14 @@ RSpec.describe Vend::ResourceActions do
 
   describe '.create' do
     it 'should make a post request to the correct route with params' do
-      expect(@klass).to receive(:post).with('http://foo.bar', page: 1)
+      expect(@klass).to receive(:post).with('http://foo.bar', {page: 1})
       @klass.create(params)
     end
   end
 
   describe '.update' do
     it 'should make a put request to the correct route with params' do
-      expect(@klass).to receive(:put).with('http://foo.bar/1', page: 1)
+      expect(@klass).to receive(:put).with('http://foo.bar/1', {page: 1})
       @klass.update(1, params)
     end
   end

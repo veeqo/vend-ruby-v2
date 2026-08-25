@@ -39,7 +39,10 @@ module Vend
         OAuth2::Client.new(client_id, secret, {
           site: "https://#{domain_prefix}.vendhq.com",
           authorize_url: AUTHORIZE_URL,
-          token_url: TOKEN_URL
+          token_url: TOKEN_URL,
+          # Vend requires client_id/client_secret in the request body; oauth2 defaults
+          # to :basic_auth (Authorization header), which Vend does not accept.
+          auth_scheme: :request_body
         })
       end
     end

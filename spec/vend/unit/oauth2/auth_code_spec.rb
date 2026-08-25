@@ -60,4 +60,39 @@ RSpec.describe Vend::Oauth2::AuthCode do
       expect(token.refresh_token).to eq(refresh_token)
     end
   end
+
+describe "token request auth scheme" do
+  let(:token_url) { "https://store.vendhq.com/api/1.0/token" }
+
+  before do
+    stub_request(:post, token_url).to_return(
+      status: 200,
+      headers: { "Content-Type" => "application/json" },
+      body: { access_token: "A", refresh_token: "R", expires_in: 3600 }.to_json
+    )
+  end
+
+  def last_request_body
+    body = WebMock::RequestRegistry.instance.requested_signatures.hash.keys.last.body
+    URI.decode_www_form(body).to_h
+  end
+
+  it "sends client credentials in the body when exchanging a code, not via Basic auth" do
+    subject.token_from_code("code")
+
+    expect(last_request_body).to include(
+      "client_id" => "client_id", "client_secret" => "secret", "grant_type" => "authorization_code"
+    )
+    expect(a_request(:post, token_url).with(headers: { "Authorization" => /Basic/ })).not_to have_been_made
+  end
+
+  it "sends client credentials in the body when refreshing a token, not via Basic auth" do
+    subject.refresh_token("token", "refresh")
+
+    expect(last_request_body).to include(
+      "client_id" => "client_id", "client_secret" => "secret", "grant_type" => "refresh_token"
+    )
+    expect(a_request(:post, token_url).with(headers: { "Authorization" => /Basic/ })).not_to have_been_made
+  end
+end
 end

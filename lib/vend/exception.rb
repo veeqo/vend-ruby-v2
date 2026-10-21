@@ -14,6 +14,7 @@ module Vend
   class NotAccepted < HttpError; end
   class TimeOut < HttpError; end
   class ResourceConflict < HttpError; end
+  class UnprocessableEntity < HttpError; end
   class TooManyRequests < HttpError; end
   class InternalServerError < HttpError; end
   class BadGateway < HttpError; end
@@ -31,6 +32,7 @@ module Vend
       406 => Vend::NotAccepted,
       408 => Vend::TimeOut,
       409 => Vend::ResourceConflict,
+      422 => Vend::UnprocessableEntity,
       429 => Vend::TooManyRequests,
       500 => Vend::InternalServerError,
       502 => Vend::BadGateway,
